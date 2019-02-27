@@ -1,3 +1,5 @@
+# from https://github.com/mks0601/TF-SimpleHumanPose/blob/master/tool/mpii2coco.
+
 from scipy.io import loadmat, savemat
 from PIL import Image
 import os
@@ -21,8 +23,10 @@ def check_empty(list,name):
 
 
 db_type = 'train' # train, test
+
 annot_file = loadmat('/home/song/datasets/mpii/mpii_human_pose_v1_u12_2/mpii_human_pose_v1_u12_1')['RELEASE']
 save_path = './annotations/' + db_type + '.json'
+
 
 joint_num = 16
 img_num = len(annot_file['annolist'][0][0][0])
