@@ -9,7 +9,9 @@ class MPII:
 
     def __init__(self, data_split):
         self.data_split = data_split
-        self.img_dir = osp.join('..', 'data', 'MPII')
+        # self.img_dir = osp.join('..', 'data', 'MPII')
+        self.img_dir = "/home/song/datasets/mpii"
+
         self.train_annot_path = osp.join('..', 'data', 'MPII', 'annotations', 'train.json')
         self.test_annot_path = osp.join('..', 'data', 'MPII', 'annotations', 'test.json')
         self.joint_num = 16
