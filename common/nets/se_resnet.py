@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
-from se_module import SElayer
+from nets.se_module import SElayer
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152']
@@ -267,6 +267,13 @@ class ResNet(nn.Module):
 
 def se_resnet50(pretrained=False, **kwargs):
     model = SEResNet(SEBottleneck, [3, 4, 6, 3], **kwargs)
+    if pretrained:
+        org_resnet = model_zoo.load_url(model_urls['resnet50'])
+        org_resnet.pop('fc.weight', None)
+        org_resnet.pop('fc.bias', None)
+        model_dict = model.state_dict()
+        model_dict.update(org_resnet)
+        model.load_state_dict(model_dict)
     return model
 
 def resnet18(pretrained=False, **kwargs):
@@ -298,6 +305,7 @@ def resnet50(pretrained=False, **kwargs):
     """
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
+
         model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
     return model
 

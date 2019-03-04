@@ -1,9 +1,9 @@
 from torch import nn
 
 
-class SELayer(nn.Module):
+class SElayer(nn.Module):
     def __init__(self, channel, reduction=16):
-        super(SELayer, self).__init__()
+        super(SElayer, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         # add bias
         self.fc = nn.Sequential(
