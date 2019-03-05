@@ -118,7 +118,7 @@ class Tester(Base):
     def __init__(self, cfg, test_epoch):
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
-        super(Tester, self).__init__(cfg, log_name = 'test_logs.txt')
+        super(Tester, self).__init__(cfg, log_name = 'test_logs.log')
 
     def _make_batch_generator(self):
         # data load and construct batch generator
@@ -137,22 +137,26 @@ class Tester(Base):
         self.tot_sample_num = testset_loader.__len__()
         self.batch_generator = batch_generator
     
-    def _make_model(self):
+    def _make_model(self, model=None):
         
-        model_path = os.path.join(self.cfg.model_dir, 'snapshot_%d.pth.tar' % self.test_epoch)
-        assert os.path.exists(model_path), 'Cannot find model at ' + model_path
-        self.logger.info('Load checkpoint from {}'.format(model_path))
-        
-        # prepare network
-        self.logger.info("Creating graph...")
-        model = get_pose_net(self.cfg, False, self.joint_num)
-        model = DataParallelModel(model).cuda()
-        ckpt = torch.load(model_path)
-        model.load_state_dict(ckpt['network'])
+        if model is None:
+            model_path = os.path.join(self.cfg.model_dir, 'snapshot_%d.pth.tar' % self.test_epoch)
+            assert os.path.exists(model_path), 'Cannot find model at ' + model_path
+            self.logger.info('Load checkpoint from {}'.format(model_path))
+            
+            # prepare network
+            self.logger.info("Creating graph...")
+            model = get_pose_net(self.cfg, False, self.joint_num)
+            model = DataParallelModel(model).cuda()
+            ckpt = torch.load(model_path)
+            model.load_state_dict(ckpt['network'])
         model.eval()
 
         self.model = model
 
     def _evaluate(self, preds, result_save_path):
-        self.testset.evaluate(preds, result_save_path)
-
+        p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary = self.testset.evaluate(preds, result_save_path)
+        self.logger.info(p1_eval_summary)
+        self.logger.info(p2_eval_summary)
+        self.logger.info(p1_action_eval_summary)
+        self.logger.info(p2_action_eval_summary)
