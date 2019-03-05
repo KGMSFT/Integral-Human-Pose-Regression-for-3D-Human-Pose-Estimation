@@ -254,7 +254,7 @@ class Human36M:
         f_eval_result.write(p2_action_eval_summary)
         f_eval_result.write('\n')
         f_eval_result.close()
-        return p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary
+        return p1_error, p2_error,  p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary
 
 
 
