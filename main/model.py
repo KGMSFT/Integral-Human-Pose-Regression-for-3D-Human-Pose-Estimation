@@ -1,5 +1,6 @@
 import torch.nn as nn
 from nets.resnet import ResNetBackbone
+from nets.se_resnet import se_resnet50
 from config import cfg
 
 class HeadNet(nn.Module):
@@ -74,6 +75,15 @@ def get_pose_net(cfg, is_train, joint_num):
         backbone.init_weights()
         head_net.init_weights()
 
+    model = ResPoseNet(backbone, head_net)
+    return model
+
+def get_se_pose_net(cfg, is_train, joint_num):
+    
+    backbone = se_resnet50(is_train)
+    head_net = HeadNet(joint_num)
+    if is_train:
+        head_net.init_weights()
     model = ResPoseNet(backbone, head_net)
     return model
 

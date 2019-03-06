@@ -13,7 +13,7 @@ from dataset import DatasetLoader
 from timer import Timer
 from logger import colorlogger
 from nets.balanced_parallel import DataParallelModel, DataParallelCriterion
-from model import get_pose_net
+from model import get_pose_net, get_se_pose_net
 from nets import loss
 
 # dynamic dataset import
@@ -99,7 +99,7 @@ class Trainer(Base):
     def _make_model(self):
         # prepare network
         self.logger.info("Creating graph and optimizer...")
-        model = get_pose_net(self.cfg, True, self.joint_num)
+        model = get_se_pose_net(self.cfg, True, self.joint_num)
         model = DataParallelModel(model).cuda()
         optimizer, scheduler = self.get_optimizer(self.cfg.optimizer, model)
         if self.cfg.continue_train:
@@ -145,7 +145,8 @@ class Tester(Base):
         
         # prepare network
         self.logger.info("Creating graph...")
-        model = get_pose_net(self.cfg, False, self.joint_num)
+        # model = get_pose_net(self.cfg, False, self.joint_num)
+        model = get_se_pose_net(self.cfg, False, self.joint_num)
         model = DataParallelModel(model).cuda()
         ckpt = torch.load(model_path)
         model.load_state_dict(ckpt['network'])
