@@ -27,7 +27,7 @@ class colorlogger():
         console_log.setLevel(logging.INFO)
         formatter = logging.Formatter(
             "%(asctime)s %(message)s",
-            "%y-%m-%d %H:%M:%S")
+            "%Y-%m-%d %H:%M:%S")
         file_log.setFormatter(formatter)
         console_log.setFormatter(formatter)
         self._logger.addHandler(file_log)
