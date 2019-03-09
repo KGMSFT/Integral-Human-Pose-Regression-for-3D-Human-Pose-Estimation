@@ -24,7 +24,7 @@ exec('from ' + cfg.testset + ' import ' + cfg.testset)
 class Base(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, cfg, log_name='logs.txt'):
+    def __init__(self, cfg, log_name='logs.log'):
         
         self.cfg = cfg
         self.cur_epoch = 0
@@ -66,7 +66,7 @@ class Trainer(Base):
     
     def __init__(self, cfg):
         self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
-        super(Trainer, self).__init__(cfg, log_name = 'train_logs.txt')
+        super(Trainer, self).__init__(cfg, log_name = 'train.log')
 
     def get_optimizer(self, optimizer_name, model):
         if optimizer_name == 'adam':
@@ -118,7 +118,7 @@ class Tester(Base):
     def __init__(self, cfg, test_epoch):
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
-        super(Tester, self).__init__(cfg, log_name = 'test_logs.txt')
+        super(Tester, self).__init__(cfg, log_name = 'test.log')
 
     def _make_batch_generator(self):
         # data load and construct batch generator
