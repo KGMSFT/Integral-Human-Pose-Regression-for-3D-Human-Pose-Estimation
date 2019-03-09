@@ -198,11 +198,11 @@ class Human36M:
         p1_error = np.mean(np.power(np.sum(p1_error,axis=2),0.5))
         p2_error = np.mean(np.power(np.sum(p2_error,axis=2),0.5))
 
-        p1_eval_summary = 'Protocol #1 error (PA MPJPE) >> %.2f' % (p1_error)
-        p2_eval_summary = 'Protocol #2 error (MPJPE) >> %.2f' % (p2_error)
-        print()
-        print(p1_eval_summary)
-        print(p2_eval_summary)
+        p1_eval_summary = 'Protocol #1 error (PA MPJPE) >> %.2f\n' % (p1_error)
+        p2_eval_summary = 'Protocol #2 error (MPJPE) >> %.2f\n' % (p2_error)
+        # print()
+        # print(p1_eval_summary)
+        # print(p2_eval_summary)
 
         # error for each action calculate
         p1_action_eval_summary = 'Protocol #1 error (PA MPJPE) for each action: \n'
@@ -223,9 +223,9 @@ class Human36M:
 
             action_name = self.action_name[i]
             p2_action_eval_summary += (action_name + ': %.2f\n' % err)
-        print()
-        print(p1_action_eval_summary)
-        print(p2_action_eval_summary)
+        # print()
+        # print(p1_action_eval_summary)
+        # print(p2_action_eval_summary)
        
         # result save
         f_pred_3d_kpt = open(osp.join(result_dir, 'pred_3d_kpt.txt'), 'w')

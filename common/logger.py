@@ -14,7 +14,7 @@ WHITE = END
 YELLOW = WARNING
 
 class colorlogger():
-    def __init__(self, log_dir, log_name='train_logs.txt'):
+    def __init__(self, log_dir, log_name='train_logs.log'):
         # set log
         self._logger = logging.getLogger(log_name)
         self._logger.setLevel(logging.INFO)
