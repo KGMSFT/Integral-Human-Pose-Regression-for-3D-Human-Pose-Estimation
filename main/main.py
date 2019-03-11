@@ -44,6 +44,7 @@ def main():
     cudnn.enabled = True
 
     trainer = Trainer(cfg)
+
     trainer._make_batch_generator()
     trainer._make_model()
 
@@ -68,8 +69,9 @@ def main():
             joint_vis = joint_vis.cuda()
             joints_have_depth = joints_have_depth.cuda()
 
-            if itr == 300:
-                break
+            # if itr == 200:
+            #     break
+          
             # forward
             heatmap_out = trainer.model(input_img)
 
@@ -88,7 +90,7 @@ def main():
                 screen = [
                     'Epoch [%d/%d] itr [%d/%d]:' % (epoch, cfg.end_epoch, itr, trainer.itr_per_epoch),
                     'lr: %g' % (trainer.scheduler.get_lr()[0]),
-                    'speed: %.2f(%.2fs r%.2f)s/100itr' % (
+                    'speed: %.2f(%.2fs r%.2f)s/itr' % (
                         trainer.tot_timer.average_time , trainer.gpu_timer.average_time , trainer.read_timer.average_time ),
                     '%.2fh/epoch' % (trainer.tot_timer.average_time / 3600. * trainer.itr_per_epoch ),
                     '%s: %.4f' % ('train_loss', train_loss.avg),
