@@ -24,7 +24,7 @@ exec('from ' + cfg.testset + ' import ' + cfg.testset)
 class Base(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, cfg, log_name='logs.txt'):
+    def __init__(self, cfg, log_name='logs.log'):
         
         self.cfg = cfg
         self.cur_epoch = 0
@@ -66,7 +66,7 @@ class Trainer(Base):
     
     def __init__(self, cfg):
         self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
-        super(Trainer, self).__init__(cfg, log_name = 'train_logs.txt')
+        super(Trainer, self).__init__(cfg, log_name = 'train.log')
 
     def get_optimizer(self, optimizer_name, model):
         if optimizer_name == 'adam':
@@ -115,10 +115,11 @@ class Trainer(Base):
 
 class Tester(Base):
     
-    def __init__(self, cfg, test_epoch):
+    def __init__(self, cfg, test_epoch, log_name):
+        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
-        super(Tester, self).__init__(cfg, log_name = 'test_logs.txt')
+        super(Tester, self).__init__(cfg, log_name = 'test.log')
 
     def _make_batch_generator(self):
         # data load and construct batch generator
@@ -137,23 +138,27 @@ class Tester(Base):
         self.tot_sample_num = testset_loader.__len__()
         self.batch_generator = batch_generator
     
-    def _make_model(self):
+    def _make_model(self, model=None):
         
-        model_path = os.path.join(self.cfg.model_dir, 'snapshot_%d.pth.tar' % self.test_epoch)
-        assert os.path.exists(model_path), 'Cannot find model at ' + model_path
-        self.logger.info('Load checkpoint from {}'.format(model_path))
-        
-        # prepare network
-        self.logger.info("Creating graph...")
-        # model = get_pose_net(self.cfg, False, self.joint_num)
-        model = get_se_pose_net(self.cfg, False, self.joint_num)
-        model = DataParallelModel(model).cuda()
-        ckpt = torch.load(model_path)
-        model.load_state_dict(ckpt['network'])
+        if model is None:
+            model_path = os.path.join(self.cfg.model_dir, 'snapshot_%d.pth.tar' % self.test_epoch)
+            assert os.path.exists(model_path), 'Cannot find model at ' + model_path
+            self.logger.info('Load checkpoint from {}'.format(model_path))
+            
+            # prepare network
+            self.logger.info("Creating graph...")
+            model = get_pose_net(self.cfg, False, self.joint_num)
+            model = DataParallelModel(model).cuda()
+            ckpt = torch.load(model_path)
+            model.load_state_dict(ckpt['network'])
         model.eval()
 
         self.model = model
 
     def _evaluate(self, preds, result_save_path):
-        self.testset.evaluate(preds, result_save_path)
-
+        p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary = self.testset.evaluate(preds, result_save_path)
+        self.logger.info(p1_eval_summary)
+        self.logger.info(p2_eval_summary)
+        self.logger.info(p1_action_eval_summary)
+        self.logger.info(p2_action_eval_summary)
+        return p1_error, p2_error

@@ -132,16 +132,16 @@ class DatasetLoader(Dataset):
             joint_img = transform_joint_to_other_db(joint_img, joints_name, ref_joints_name)        
             joint_vis = transform_joint_to_other_db(joint_vis, joints_name, ref_joints_name)        
         
-        if self.is_train:
-            img_patch = self.transform(img_patch)
-            joint_img = joint_img.astype(np.float32)
-            joint_vis = (joint_vis > 0).astype(np.float32)
-            joints_have_depth = np.array([joints_have_depth]).astype(np.float32)
+        # if self.is_train:
+        img_patch = self.transform(img_patch)
+        joint_img = joint_img.astype(np.float32)
+        joint_vis = (joint_vis > 0).astype(np.float32)
+        joints_have_depth = np.array([joints_have_depth]).astype(np.float32)
 
-            return img_patch, joint_img, joint_vis, joints_have_depth
-        else:
-            img_patch = self.transform(img_patch)
-            return img_patch
+        return img_patch, joint_img, joint_vis, joints_have_depth
+        # else:
+        #     img_patch = self.transform(img_patch)
+        #     return img_patch
 
     def __len__(self):
         if self.multiple_db:

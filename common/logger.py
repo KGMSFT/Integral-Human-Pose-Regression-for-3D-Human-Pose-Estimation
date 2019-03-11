@@ -14,24 +14,25 @@ WHITE = END
 YELLOW = WARNING
 
 class colorlogger():
-    def __init__(self, log_dir, log_name='train_logs.txt'):
+    def __init__(self, log_dir, log_name='train_logs.log'):
         # set log
         self._logger = logging.getLogger(log_name)
-        self._logger.setLevel(logging.INFO)
-        log_file = os.path.join(log_dir, log_name)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        file_log = logging.FileHandler(log_file, mode='a')
-        file_log.setLevel(logging.INFO)
-        console_log = logging.StreamHandler()
-        console_log.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            "{}%(asctime)s{} %(message)s".format(GREEN, END),
-            "%m-%d %H:%M:%S")
-        file_log.setFormatter(formatter)
-        console_log.setFormatter(formatter)
-        self._logger.addHandler(file_log)
-        self._logger.addHandler(console_log)
+        if not self._logger.handlers:
+            self._logger.setLevel(logging.INFO)
+            log_file = os.path.join(log_dir, log_name)
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+            file_log = logging.FileHandler(log_file, mode='a')
+            file_log.setLevel(logging.INFO)
+            console_log = logging.StreamHandler()
+            console_log.setLevel(logging.INFO)
+            formatter = logging.Formatter(
+                "%(asctime)s %(message)s",
+                "%Y-%m-%d %H:%M:%S")
+            file_log.setFormatter(formatter)
+            console_log.setFormatter(formatter)
+            self._logger.addHandler(file_log)
+            self._logger.addHandler(console_log)
 
     def debug(self, msg):
         self._logger.debug(str(msg))

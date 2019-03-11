@@ -65,15 +65,16 @@ def main():
             
             trainer.gpu_timer.toc()
 
-            screen = [
-                'Epoch %d/%d itr %d/%d:' % (epoch, cfg.end_epoch, itr, trainer.itr_per_epoch),
-                'lr: %g' % (trainer.scheduler.get_lr()[0]),
-                'speed: %.2f(%.2fs r%.2f)s/itr' % (
-                    trainer.tot_timer.average_time, trainer.gpu_timer.average_time, trainer.read_timer.average_time),
-                '%.2fh/epoch' % (trainer.tot_timer.average_time / 3600. * trainer.itr_per_epoch),
-                '%s: %.4f' % ('loss_loc', JointLocationLoss.detach()),
-                ]
-            trainer.logger.info(' '.join(screen))
+            if itr % 100 == 0:
+                screen = [
+                    'Epoch %d/%d itr %d/%d:' % (epoch, cfg.end_epoch, itr, trainer.itr_per_epoch),
+                    'lr: %g' % (trainer.scheduler.get_lr()[0]),
+                    'speed: %.2f(%.2fs r%.2f)s/itr' % (
+                        trainer.tot_timer.average_time/100, trainer.gpu_timer.average_time/100, trainer.read_timer.average_time/100),
+                    '%.2fh/epoch' % (trainer.tot_timer.average_time / 3600. * trainer.itr_per_epoch),
+                    '%s: %.4f' % ('loss_loc', JointLocationLoss.detach()),
+                    ]
+                trainer.logger.info(' '.join(screen))
 
             trainer.tot_timer.toc()
             trainer.tot_timer.tic()
