@@ -49,8 +49,12 @@ class JointLocationLoss(nn.Module):
         loss = torch.abs(coord_out - gt_coord) * gt_vis
         loss = (loss[:,:,0] + loss[:,:,1] + loss[:,:,2] * gt_have_depth)/3.
 
-        loss += VarLoss(var_weight=0.001)(coord_out[:,:,2], gt_coord[:,:,2], gt_vis, gt_coord[:,:,:2])
-        return loss.mean()
+        loss = loss.mean()
+
+        # print(gt_have_depth)
+        varloss = VarLoss(var_weight=1.0)(coord_out[:,:,2], gt_vis, gt_have_depth, gt_coord[:,:,:2])
+        loss += varloss[0]
+        return loss
 
 class VarLoss(Function):
   def __init__(self, var_weight):
@@ -119,7 +123,7 @@ class VarLoss(Function):
           loss = 0
           for j in range(N):
             if l[j] > 0:
-              loss += (l[j] - E) ** 2 / 2. / num
+              loss += (l[j]  - E) ** 2 / 2. / num
           output += loss 
     output = self.var_weight * output / batch_size
     self.save_for_backward(input, visible, mask, gt_2d)
@@ -136,27 +140,33 @@ class VarLoss(Function):
         for g in range(len(self.skeleton_idx)):
           E, num = 0, 0
           N = len(self.skeleton_idx[g])
-          l = np.zeros(N)
+          l = np.zeros(N, dtype=np.float32)
           for j in range(N):
             id1, id2 = self.skeleton_idx[g][j]
             if visible[t, id1] > 0.5 and visible[t, id2] > 0.5:
               l[j] = (((xy[t, id1] - xy[t, id2]) ** 2).sum() + \
                       (input[t, id1] - input[t, id2]) ** 2) ** 0.5
-              l[j] = l[j] * self.skeleton_weight[g][j]
+              l[j] = l[j] / self.skeleton_weight[g][j]
               num += 1
               E += l[j]
           if num < 0.5:
             E = 0
           else:
             E = E / num
-          for j in range(N):
+          for j in range(N):            
             if l[j] > 0:
               id1, id2 = self.skeleton_idx[g][j]
-              grad_input[t][id1] += self.var_weight * \
-                self.skeleton_weight[g][j] ** 2 / num * (l[j] - E) \
-                / l[j] * (input[t, id1] - input[t, id2]) / batch_size
-              grad_input[t][id2] += self.var_weight * \
-                self.skeleton_weight[g][j] ** 2 / num * (l[j] - E) \
-                / l[j] * (input[t, id2] - input[t, id1]) / batch_size
+              # print((input[t, id1] - input[t, id2]).dtype)
+              # print(l[j].dtype)
+              # print((E.astype(np.float32) / l[j]).dtype)
+              # print(type(self.var_weight))
+              # print(grad_input[t][id1].dtype)
+              # print(type(self.skeleton_weight[g][j] ** 2))
+              # E = E.astype(np.float32)
+              res = self.var_weight / self.skeleton_weight[g][j] ** 2 / num * (l[j] - E) / l[j] * (input[t, id1] - input[t, id2]) / batch_size
+              #grad_input[t][id1] += self.var_weight / self.skeleton_weight[g][j] ** 2 / num * (l[j] - E) / l[j] #* (input[t, id1] - input[t, id2]) #/ batch_size
+              grad_input[t][id1] += res.float()
+              res2 = self.var_weight / self.skeleton_weight[g][j] ** 2 / num * (l[j] - E) / l[j] * (input[t, id2] - input[t, id1]) / batch_size
+              grad_input[t][id2] += res.float()
     grad_input = grad_input.cuda(self.device, non_blocking=True)
     return grad_input, None, None, None
