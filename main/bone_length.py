@@ -42,8 +42,8 @@ def gt_joint_img():
         skeleton_train[idx] = joint_img
     print(skeleton_train.shape)
     skeleton_train.tofile("skeleton_train.np.bin")
-    
-def main():
+
+def evaluate():
     idx = 0
     db = Human36M("train")
     db_hm36 = db.load_data()
@@ -53,6 +53,7 @@ def main():
     skeleton = skeleton.reshape(-1, 18, 3)
     joint_img = skeleton[idx]
     skeleton_struct = ( (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), (8, 14), (14, 15), (15, 16), (0, 1), (1, 2), (2, 3), (0, 4), (4, 5), (5, 6) )
+    bone_group = (((8,11), (8, 14)), ((0,1),(0,4)), ((11,12),(12, 13),(14,15),(15,16)), ((4,5),(5,6),(1,2),(2,3)))
     bone_len = []
     for (first, second) in skeleton_struct:
         lens = {}
@@ -66,5 +67,44 @@ def main():
     print(joint_img)
     for i in range(len(bone_len)):
         print(bone_len[i]['len_ratio'])
+    for i in range(len(bone_len)):
+        print(bone_len[i]['len_img'])
+    for i in range(len(bone_len)):
+        print(bone_len[i]['len_cam']) 
+
+def main():
+    np.set_printoptions(precision=16)
+    idx = 30000
+    skeleton = np.fromfile("skeleton_train.np.bin", dtype=np.float32)
+    skeleton = skeleton.reshape(-1, 18, 3)
+    joint_img = skeleton[idx]
+    skeleton_struct = ( (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), (8, 14), (14, 15), (15, 16), (0, 1), (1, 2), (2, 3), (0, 4), (4, 5), (5, 6) )
+    bone_group = (((8,11), (8, 14)), ((0,1),(0,4)), ((11,12),(12, 13),(14,15),(15,16)), ((4,5),(5,6),(1,2),(2,3)))
+    bone_len_avg_group = []
+    delt = skeleton[:, 11, :] - skeleton[:, 12, :]
+    # print(delt)
+    # print(delt**2)
+    print((delt**2).sum(axis=1).mean())
+
+    delt2 = skeleton[:, 14, :] - skeleton[:, 15, :]
+    # print(delt2)
+    # print(delt2**2)
+    print((delt2**2).sum(axis=1).mean())
+    print()
+    print("=============")
+    for g in bone_group:
+        group_len_avg = []
+        for i in range(len(g)):
+            
+            bone_len = ((skeleton[:,g[i][0],:] - skeleton[:,g[i][1],:])**2).sum(axis=1).mean()
+            group_len_avg.append(bone_len)
+            print("{:.16f}".format(bone_len))
+            print()
+        # print(group_len_avg)
+        print()
+        group_len_avg.append(group_len_avg)
+
+    
+
 if __name__ == "__main__":
     main()
