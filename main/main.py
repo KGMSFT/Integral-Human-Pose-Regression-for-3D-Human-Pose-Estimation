@@ -50,8 +50,11 @@ def main():
 
     train_loss = AverageMeter()
     test_loss = AverageMeter()
+
     train_loss_his = []
     test_loss_his = []
+    p1_error_his = []
+    p2_error_his = []
     # train
     for epoch in range(trainer.start_epoch, cfg.end_epoch):
         trainer.scheduler.step()
@@ -168,13 +171,14 @@ def main():
         preds = np.concatenate(preds, axis=0)
         
         p1_error, p2_error= tester._evaluate(preds, cfg.result_dir)    
-
+        p1_error_his.append(p1_error)
+        p2_error_his.append(p2_error)
         trainer.save_model({
             'epoch': epoch,
             'test_loss_his': test_loss_his,
             'train_loss_his': train_loss_his,
-            'p1_error': p1_error,
-            'p2_error': p2_error,
+            'p1_error_his': p1_error_his,
+            'p2_error_his': p2_error_his,
             'network': trainer.model.state_dict(),
             'optimizer': trainer.optimizer.state_dict(),
             'scheduler': trainer.scheduler.state_dict(),

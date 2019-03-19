@@ -58,7 +58,7 @@ class Base(object):
         model.load_state_dict(ckpt['network'])
         optimizer.load_state_dict(ckpt['optimizer'])
         scheduler.load_state_dict(ckpt['scheduler'])
-
+        print(ckpt['train_loss_his'][-1])
         return start_epoch, model, optimizer, scheduler
 
 
