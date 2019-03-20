@@ -33,7 +33,7 @@ class Human36M:
     def get_subsampling_ratio(self, data_split):
 
         if data_split == 'train':
-            return 5
+            return 50
         elif data_split == 'test':
             return 64
         else:
@@ -120,7 +120,7 @@ class Human36M:
 
         return data
 
-    def evaluate(self, preds, result_dir):
+    def evaluate(self, preds, result_dir,epoch):
 
         print() 
         print('Evaluation start...')
@@ -198,7 +198,7 @@ class Human36M:
         p1_error = np.mean(np.power(np.sum(p1_error,axis=2),0.5))
         p2_error = np.mean(np.power(np.sum(p2_error,axis=2),0.5))
 
-        p1_eval_summary = 'Protocol #1 error (PA MPJPE) >> %.2f\n' % (p1_error)
+        p1_eval_summary = '===%d===\n Protocol #1 error (PA MPJPE) >> %.2f\n' % (epoch, p1_error)
         p2_eval_summary = 'Protocol #2 error (MPJPE) >> %.2f\n' % (p2_error)
         # print()
         # print(p1_eval_summary)
