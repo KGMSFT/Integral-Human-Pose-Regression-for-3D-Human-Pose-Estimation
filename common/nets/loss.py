@@ -52,8 +52,8 @@ class JointLocationLoss(nn.Module):
         loss = loss.mean()
 
         # print(gt_have_depth)
-        varloss = VarLoss(var_weight=0.7)(coord_out[:,:,2], gt_vis, gt_have_depth, gt_coord[:,:,:2])
-        loss += varloss[0]
+        # varloss = VarLoss(var_weight=0.7)(coord_out[:,:,2], gt_vis, gt_have_depth, gt_coord[:,:,:2])
+        # loss += varloss[0]
         return loss
 
 class VarLoss(Function):
@@ -103,6 +103,7 @@ class VarLoss(Function):
     output = torch.FloatTensor(1) * 0
     for t in range(batch_size):
       if mask[t].sum() == 0: # mask is the mask for supervised depth
+      # if True:
         # xy[t] = 2.0 * xy[t] / ref.outputRes - 1
         for g in range(len(self.skeleton_idx)):
           E, num = 0, 0
