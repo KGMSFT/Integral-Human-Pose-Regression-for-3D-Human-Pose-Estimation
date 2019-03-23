@@ -85,7 +85,7 @@ def main():
             train_loss.update(JointLocationLoss.detach())
             # print(JointLocationLoss)
             # print(JointLocationLoss.detach().cpu().numpy())
-            if JointLocationLoss.detach().cpu().numpy() == np.nan:
+            if np.isnan(JointLocationLoss.detach().cpu().numpy()):
                 print(index)
             loss.backward()
             trainer.optimizer.step()

@@ -17,6 +17,8 @@ class DatasetLoader(Dataset):
         if isinstance(db, list):
             self.multiple_db = True
             self.db = [d.load_data() for d in db]
+            for d in self.db:
+                print(len(d))
             self.joints_name = [d.joints_name for d in db]
             self.joint_num = [d.joint_num for d in db]
             self.skeleton = [d.skeleton for d in db]
@@ -41,7 +43,6 @@ class DatasetLoader(Dataset):
             self.do_augment = False
 
     def __getitem__(self, index):
-        
         if self.multiple_db:
             db_idx = index // max([len(db) for db in self.db])
 
@@ -138,7 +139,7 @@ class DatasetLoader(Dataset):
         joint_vis = (joint_vis > 0).astype(np.float32)
         joints_have_depth = np.array([joints_have_depth]).astype(np.float32)
 
-        return img_patch, joint_img, joint_vis, joints_have_depth
+        return index, img_patch, joint_img, joint_vis, joints_have_depth
         # else:
         #     img_patch = self.transform(img_patch)
         #     return img_patch

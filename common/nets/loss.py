@@ -52,8 +52,8 @@ class JointLocationLoss(nn.Module):
         loss = loss.mean()
 
         # print(gt_have_depth)
-        # varloss = VarLoss(var_weight=0.7)(coord_out[:,:,2], gt_vis, gt_have_depth, gt_coord[:,:,:2])
-        # loss += varloss[0]
+        varloss = VarLoss(var_weight=0.1)(coord_out[:,:,2], gt_vis, gt_have_depth, gt_coord[:,:,:2])
+        loss += varloss[0]
         return loss
 
 class VarLoss(Function):
@@ -157,12 +157,6 @@ class VarLoss(Function):
           for j in range(N):            
             if l[j] > 0:
               id1, id2 = self.skeleton_idx[g][j]
-              # print((input[t, id1] - input[t, id2]).dtype)
-              # print(l[j].dtype)
-              # print((E.astype(np.float32) / l[j]).dtype)
-              # print(type(self.var_weight))
-              # print(grad_input[t][id1].dtype)
-              # print(type(self.skeleton_weight[g][j] ** 2))
               # E = E.astype(np.float32)
               res = self.var_weight / self.skeleton_weight[g][j] ** 2 / num * (l[j] - E) / l[j] * (input[t, id1] - input[t, id2]) / batch_size
               #grad_input[t][id1] += self.var_weight / self.skeleton_weight[g][j] ** 2 / num * (l[j] - E) / l[j] #* (input[t, id1] - input[t, id2]) #/ batch_size

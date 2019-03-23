@@ -155,8 +155,8 @@ class Tester(Base):
 
         self.model = model
 
-    def _evaluate(self, preds, result_save_path):
-        p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary = self.testset.evaluate(preds, result_save_path)
+    def _evaluate(self, preds, result_save_path, epoch):
+        p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary = self.testset.evaluate(preds, result_save_path, epoch)
         self.logger.info(p1_eval_summary)
         self.logger.info(p2_eval_summary)
         self.logger.info(p1_action_eval_summary)
