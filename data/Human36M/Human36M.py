@@ -147,6 +147,10 @@ class Human36M:
             gt_3d_kpt = gt['joint_cam']
             gt_vis = gt['joint_vis'].copy()
 
+
+            # 测试坐标转换误差
+            # joint_img = gt['joint_img']
+            # pre_2d_kpt = joint_img.copy()
             # restore coordinates to original space
             pre_2d_kpt = preds[n].copy()
             pre_2d_kpt[:,0], pre_2d_kpt[:,1], pre_2d_kpt[:,2] = warp_coord_to_original(pre_2d_kpt, bbox, gt_3d_center)
