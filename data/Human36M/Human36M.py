@@ -120,7 +120,7 @@ class Human36M:
 
         return data
 
-    def evaluate(self, preds, result_dir,epoch):
+    def evaluate(self, preds, result_dir):
 
         print() 
         print('Evaluation start...')
@@ -195,14 +195,38 @@ class Human36M:
         # total error calculate
         p1_error = np.take(p1_error, self.eval_joint, axis=1)
         p2_error = np.take(p2_error, self.eval_joint, axis=1)
+        p1_error_xyz = np.mean(np.abs(p1_error), axis=(0, 1))
+        p2_error_xyz = np.mean(np.abs(p2_error), axis=(0, 1))
+        p1_joint_error = np.mean(np.power(np.sum(p1_error, axis=2), 0.5), axis=0)
+        p2_joint_error = np.mean(np.power(np.sum(p2_error, axis=2), 0.5), axis=0)
         p1_error = np.mean(np.power(np.sum(p1_error,axis=2),0.5))
         p2_error = np.mean(np.power(np.sum(p2_error,axis=2),0.5))
 
-        p1_eval_summary = '===%d===\n Protocol #1 error (PA MPJPE) >> %.2f\n' % (epoch, p1_error)
+        # joint error detail
+        p1_joint_eval_summary = 'Protocal #1 error(PA MPJPE) for each joint: \n'
+        for i in range(len(p1_joint_error)):
+            err = p1_joint_error[i]
+            p1_joint_eval_summary += (self.joints_name[i] + ': %.2f\n' % err)
+
+        p2_joint_eval_summary = 'Protocal #2 error(MPJPE) for each joint: \n'
+        for i in range(len(p2_joint_error)):
+            err = p2_joint_error[i]
+            p2_joint_eval_summary += (self.joints_name[i] + ': %.2f\n' % err)
+
+        p1_eval_summary = 'Protocol #1 error (PA MPJPE) >> %.2f\n' % (p1_error)
         p2_eval_summary = 'Protocol #2 error (MPJPE) >> %.2f\n' % (p2_error)
-        # print()
-        # print(p1_eval_summary)
-        # print(p2_eval_summary)
+
+        # error for each dimension
+        dim_name = ['X', 'Y', 'Z']
+        p1_dim_eval_summary = "Protocal #1 error(PA MPJPE) for each dim: \n"
+        for i in range(len(p1_error_xyz)):
+            p1_dim_eval_summary += (dim_name[i] + ': %.2f\n' %p1_error_xyz[i])
+
+        p2_dim_eval_summary = "Protocal #2 error(MPJPE) for each dim: \n"
+        for i in range(len(p2_error_xyz)):
+            p2_dim_eval_summary += (dim_name[i] + ': %.2f\n' %p2_error_xyz[i])
+
+
 
         # error for each action calculate
         p1_action_eval_summary = 'Protocol #1 error (PA MPJPE) for each action: \n'
@@ -254,7 +278,8 @@ class Human36M:
         f_eval_result.write(p2_action_eval_summary)
         f_eval_result.write('\n')
         f_eval_result.close()
-        return p1_error, p2_error,  p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary
+        return p1_error, p2_error,  p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary, \
+            p1_joint_eval_summary, p2_joint_eval_summary, p1_dim_eval_summary, p2_dim_eval_summary
 
 
 

@@ -111,7 +111,7 @@ def main():
         train_loss.reset()
 
 
-        tester = Tester(cfg, epoch, log_name = "train.log")
+        tester = Tester(cfg, epoch)
         tester._make_batch_generator()
         tester._make_model(trainer.model)
 
