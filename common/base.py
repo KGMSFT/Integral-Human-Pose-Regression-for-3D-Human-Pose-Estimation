@@ -158,7 +158,7 @@ class Tester(Base):
     def _evaluate(self, preds, result_save_path, epoch):
         p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary,\
             p1_joint_eval_summary, p2_joint_eval_summary, p1_dim_eval_summary, p2_dim_eval_summary = self.testset.evaluate(preds, result_save_path)
-        self.logger.info("===evaluate epoch: {}===\n".format(epoch))
+        self.logger.info("===evaluate epoch: {}, sample_ratio: {}, geo_reg: {} ===\n".format(epoch, cfg.sample_ratio, cfg.geo_reg))
         self.logger.info(p1_eval_summary)
         self.logger.info(p2_eval_summary)
         self.logger.info(p1_action_eval_summary)
