@@ -36,6 +36,7 @@ class Grammer(nn.Module):
         self.birnn_crd_2 = nn.RNN(input_size=joint_num*3, hidden_size=self.hidden_size, batch_first=True, bidirectional=True)
         self.fc_crd_2 = nn.Linear(self.hidden_size * 2, 3)
 
+
     def forward(self, x):
         x = x.repeat((1, self.joint_num, 1))
         chain1 = self.getRightLeg(x)
