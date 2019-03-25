@@ -15,7 +15,7 @@ from logger import colorlogger
 from nets.balanced_parallel import DataParallelModel, DataParallelCriterion
 from model import get_pose_net, get_se_pose_net
 from nets import loss
-
+from grammer_model import get_grammer_net
 # dynamic dataset import
 for i in range(len(cfg.trainset)):
     exec('from ' + cfg.trainset[i] + ' import ' + cfg.trainset[i])
@@ -65,7 +65,7 @@ class Base(object):
 class Trainer(Base):
     
     def __init__(self, cfg):
-        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
+        self.GrammerLoss = DataParallelCriterion(loss.GrammerLoss())
         super(Trainer, self).__init__(cfg, log_name = 'train.log')
 
     def get_optimizer(self, optimizer_name, model):
@@ -99,7 +99,7 @@ class Trainer(Base):
     def _make_model(self):
         # prepare network
         self.logger.info("Creating graph and optimizer...")
-        model = get_se_pose_net(self.cfg, True, self.joint_num)
+        model = get_grammer_net(self.cfg, True, self.joint_num)
         model = DataParallelModel(model).cuda()
         optimizer, scheduler = self.get_optimizer(self.cfg.optimizer, model)
         if self.cfg.continue_train:
@@ -116,7 +116,7 @@ class Trainer(Base):
 class Tester(Base):
     
     def __init__(self, cfg, test_epoch, log_name='test.log'):
-        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
+        self.GrammerLoss = DataParallelCriterion(loss.GrammerLoss())
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
         super(Tester, self).__init__(cfg, log_name = 'test.log')

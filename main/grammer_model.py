@@ -4,7 +4,7 @@ from nets.se_resnet import se_resnet50
 from config import cfg
 from torch.nn import functional as F
 import torch
-from grammer import Grammer
+from nets.grammer import Grammer
 class HeadNet(nn.Module):
 
     def __init__(self, joint_num):
@@ -67,6 +67,7 @@ class GrammerPoseNet(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         x = self.head(x)
+        x = x.view(-1, 54)
         x = self.grammer(x)
         return x 
 

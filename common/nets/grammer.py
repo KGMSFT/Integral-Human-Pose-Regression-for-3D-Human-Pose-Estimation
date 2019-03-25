@@ -38,7 +38,8 @@ class Grammer(nn.Module):
 
 
     def forward(self, x):
-        x = x.repeat((1, self.joint_num, 1))
+        x = x.repeat((1, self.joint_num))
+        x = x.view(-1, self.joint_num, self.joint_num * 3)
         chain1 = self.getRightLeg(x)
         chain2 = self.getLeftLeg(x)
         chain3 = self.getRightArm(x)
@@ -89,7 +90,7 @@ class Grammer(nn.Module):
         output9 = self.fc_crd_2(output9)
         output9 = output9.view((-1, 8 * 3))
         
-        joint_16 = self.merge_func([output1, output2, output3, output4, output5, output6, output7, output8, output9])
+        joint_16 = self.merge_func([output1, output2, output3, output4, output5, output6, output7, output8, output9], x)
         return joint_16
 
 
@@ -151,7 +152,7 @@ class Grammer(nn.Module):
         x1 = x1[[8,14,15,16,0,4,5,6]]
         x1 = x1.permute(2, 0, 1)
         return x1
-    def merge_func(self, inputs):
+    def merge_func(self, inputs, x):
         rhip = (inputs[0][:,3:6] + inputs[6][:,3:6] + inputs[7][:,15:18]) / 3
         rhip = rhip.view(-1, 3)
         rknee = (inputs[0][:,6:9] + inputs[6][:,6:9] + inputs[7][:,18:21]) / 3
@@ -187,7 +188,6 @@ class Grammer(nn.Module):
         neck = neck.view(-1, 3)
         head = inputs[4][:,9:]
         head = head.view(-1, 3)
-
-        joint_16 = torch.cat((rhip, rknee, rank, lhip, lknee, lank, rshoudler, relbow, rwrist, lshoudler, lelbow, lwrist, pelvis, spine, neck, head))
-        
-        return joint_16
+        joint_18 = torch.cat((pelvis, rhip, rknee, rank, lhip, lknee, lank, spine, neck, x[:,0,27:30], head, lshoudler, lelbow, lwrist, rshoudler, relbow, rwrist, x[:,0,-3:]), 1)
+        joint_18 = joint_18.view(-1, self.joint_num, 3)
+        return joint_18

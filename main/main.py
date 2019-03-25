@@ -79,13 +79,13 @@ def main():
             heatmap_out = trainer.model(input_img)
 
             # backward
-            JointLocationLoss = trainer.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+            GrammerLoss = trainer.GrammerLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
 
-            loss = JointLocationLoss
-            train_loss.update(JointLocationLoss.detach())
-            # print(JointLocationLoss)
-            # print(JointLocationLoss.detach().cpu().numpy())
-            if JointLocationLoss.detach().cpu().numpy() == np.nan:
+            loss = GrammerLoss
+            train_loss.update(GrammerLoss.detach())
+            # print(GrammerLoss)
+            # print(GrammerLoss.detach().cpu().numpy())
+            if GrammerLoss.detach().cpu().numpy() == np.nan:
                 print(index)
             loss.backward()
             trainer.optimizer.step()
@@ -126,9 +126,9 @@ def main():
                 if cfg.num_gpus > 1:
                     heatmap_out = gather(heatmap_out,0)
                 # print(heatmap_out.size())
-                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+                test_GrammerLoss = tester.GrammerLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
                 coord_out = soft_argmax(heatmap_out, tester.joint_num)
-                test_loss.update(test_JointLocationLoss.detach())
+                test_loss.update(test_GrammerLoss.detach())
                 
                 if cfg.flip_test:
                     flipped_input_img = flip(input_img, dims=3)
