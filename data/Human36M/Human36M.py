@@ -33,7 +33,7 @@ class Human36M:
     def get_subsampling_ratio(self, data_split):
 
         if data_split == 'train':
-            return 50
+            return 500000000
         elif data_split == 'test':
             return 64
         else:

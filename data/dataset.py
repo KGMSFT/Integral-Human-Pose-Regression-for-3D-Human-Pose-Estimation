@@ -138,7 +138,7 @@ class DatasetLoader(Dataset):
         joint_vis = (joint_vis > 0).astype(np.float32)
         joints_have_depth = np.array([joints_have_depth]).astype(np.float32)
 
-        return img_patch, joint_img, joint_vis, joints_have_depth
+        return index, img_patch, joint_img, joint_vis, joints_have_depth
         # else:
         #     img_patch = self.transform(img_patch)
         #     return img_patch
