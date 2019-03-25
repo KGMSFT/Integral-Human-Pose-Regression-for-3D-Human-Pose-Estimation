@@ -50,15 +50,18 @@ def main():
 
     train_loss = AverageMeter()
     test_loss = AverageMeter()
+
     train_loss_his = []
     test_loss_his = []
+    p1_error_his = []
+    p2_error_his = []
     # train
     for epoch in range(trainer.start_epoch, cfg.end_epoch):
         trainer.scheduler.step()
         trainer.tot_timer.tic()
         trainer.read_timer.tic()
 
-        for itr, (input_img, joint_img, joint_vis, joints_have_depth) in enumerate(trainer.batch_generator):
+        for itr, (index, input_img, joint_img, joint_vis, joints_have_depth) in enumerate(trainer.batch_generator):
             trainer.read_timer.toc()
             trainer.gpu_timer.tic()
 
@@ -80,7 +83,10 @@ def main():
 
             loss = JointLocationLoss
             train_loss.update(JointLocationLoss.detach())
-
+            # print(JointLocationLoss)
+            # print(JointLocationLoss.detach().cpu().numpy())
+            if JointLocationLoss.detach().cpu().numpy() == np.nan:
+                print(index)
             loss.backward()
             trainer.optimizer.step()
             
@@ -105,14 +111,14 @@ def main():
         train_loss.reset()
 
 
-        tester = Tester(cfg, epoch, log_name = "train.log")
+        tester = Tester(cfg, epoch)
         tester._make_batch_generator()
         tester._make_model(trainer.model)
 
         preds = []
         
         with torch.no_grad():
-            for itr_test, (input_img, joint_img, joint_vis, joints_have_depth) in enumerate(tqdm(tester.batch_generator)):
+            for itr_test, (index,input_img, joint_img, joint_vis, joints_have_depth) in enumerate(tqdm(tester.batch_generator)):
 
                 input_img = input_img.cuda()
                 # forward
@@ -167,14 +173,15 @@ def main():
         # evaluate
         preds = np.concatenate(preds, axis=0)
         
-        p1_error, p2_error= tester._evaluate(preds, cfg.result_dir)    
-
+        p1_error, p2_error= tester._evaluate(preds, cfg.result_dir, epoch)    
+        p1_error_his.append(p1_error)
+        p2_error_his.append(p2_error)
         trainer.save_model({
             'epoch': epoch,
             'test_loss_his': test_loss_his,
             'train_loss_his': train_loss_his,
-            'p1_error': p1_error,
-            'p2_error': p2_error,
+            'p1_error_his': p1_error_his,
+            'p2_error_his': p2_error_his,
             'network': trainer.model.state_dict(),
             'optimizer': trainer.optimizer.state_dict(),
             'scheduler': trainer.scheduler.state_dict(),
