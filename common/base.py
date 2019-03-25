@@ -115,7 +115,7 @@ class Trainer(Base):
 
 class Tester(Base):
     
-    def __init__(self, cfg, test_epoch, log_name):
+    def __init__(self, cfg, test_epoch, log_name='test.log'):
         self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
@@ -156,9 +156,15 @@ class Tester(Base):
         self.model = model
 
     def _evaluate(self, preds, result_save_path, epoch):
-        p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary = self.testset.evaluate(preds, result_save_path, epoch)
+        p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary,\
+            p1_joint_eval_summary, p2_joint_eval_summary, p1_dim_eval_summary, p2_dim_eval_summary = self.testset.evaluate(preds, result_save_path)
+        self.logger.info("===evaluate epoch: {}===\n".format(epoch))
         self.logger.info(p1_eval_summary)
         self.logger.info(p2_eval_summary)
         self.logger.info(p1_action_eval_summary)
         self.logger.info(p2_action_eval_summary)
+        self.logger.info(p1_joint_eval_summary)
+        self.logger.info(p2_joint_eval_summary)
+        self.logger.info(p1_dim_eval_summary)
+        self.logger.info(p2_dim_eval_summary)
         return p1_error, p2_error
