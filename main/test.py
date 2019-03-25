@@ -49,7 +49,7 @@ def main():
 
     with torch.no_grad():
         # for itr, input_img in enumerate(tqdm(tester.batch_generator)):
-        for itr, (input_img, joint_img, joint_vis, joints_have_depth) in enumerate(tqdm(tester.batch_generator)):            
+        for itr, (index, input_img, joint_img, joint_vis, joints_have_depth) in enumerate(tqdm(tester.batch_generator)):            
             input_img = input_img.cuda()
 
             # forward
@@ -88,7 +88,7 @@ def main():
             
     # evaluate
     preds = np.concatenate(preds, axis=0)
-    tester._evaluate(preds, cfg.result_dir)    
+    tester._evaluate(preds, cfg.result_dir, args.test_epoch)    
 
 if __name__ == "__main__":
     main()
