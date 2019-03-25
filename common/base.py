@@ -82,6 +82,7 @@ class Trainer(Base):
     
     def _make_batch_generator(self):
         # data load and construct batch generator
+        self.logger.info("=== {} | sample_ratio:{} ====".format(cfg.exp_name, cfg.sample_ratio))
         self.logger.info("Creating dataset...")
         trainset_list = []
         for i in range(len(self.cfg.trainset)):
@@ -158,7 +159,7 @@ class Tester(Base):
     def _evaluate(self, preds, result_save_path, epoch):
         p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary,\
             p1_joint_eval_summary, p2_joint_eval_summary, p1_dim_eval_summary, p2_dim_eval_summary = self.testset.evaluate(preds, result_save_path)
-        self.logger.info("===evaluate epoch: {}, sample_ratio: {}, geo_reg: {} ===\n".format(epoch, cfg.sample_ratio, cfg.geo_reg))
+        self.logger.info("===evaluate {} | epoch: {}, sample_ratio: {} ===\n".format(cfg.exp_name, epoch, cfg.sample_ratio))
         self.logger.info(p1_eval_summary)
         self.logger.info(p2_eval_summary)
         self.logger.info(p1_action_eval_summary)
