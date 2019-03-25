@@ -88,7 +88,7 @@ def main():
             
     # evaluate
     preds = np.concatenate(preds, axis=0)
-    tester._evaluate(preds, cfg.result_dir)    
+    tester._evaluate(preds, cfg.result_dir, args.test_epoch)    
 
 if __name__ == "__main__":
     main()
