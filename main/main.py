@@ -127,7 +127,7 @@ def main():
                     heatmap_out = gather(heatmap_out,0)
                 # print(heatmap_out.size())
                 test_GrammerLoss = tester.GrammerLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
-                coord_out = soft_argmax(heatmap_out, tester.joint_num)
+                coord_out = heatmap_out
                 test_loss.update(test_GrammerLoss.detach())
                 
                 if cfg.flip_test:
