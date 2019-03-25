@@ -199,23 +199,27 @@ class Human36M:
         # total error calculate
         p1_error = np.take(p1_error, self.eval_joint, axis=1)
         p2_error = np.take(p2_error, self.eval_joint, axis=1)
-        p1_error_xyz = np.mean(np.abs(p1_error), axis=(0, 1))
-        p2_error_xyz = np.mean(np.abs(p2_error), axis=(0, 1))
-        p1_joint_error = np.mean(np.power(np.sum(p1_error, axis=2), 0.5), axis=0)
-        p2_joint_error = np.mean(np.power(np.sum(p2_error, axis=2), 0.5), axis=0)
+        p1_error_xyz = np.mean(np.power(p1_error, 0.5), axis=(0, 1))
+        p2_error_xyz = np.mean(np.power(p2_error, 0.5), axis=(0, 1))
+        p1_joint_error = np.mean(np.power(p1_error, 0.5), axis=0)
+        p2_joint_error = np.mean(np.power(p2_error, 0.5), axis=0)
         p1_error = np.mean(np.power(np.sum(p1_error,axis=2),0.5))
         p2_error = np.mean(np.power(np.sum(p2_error,axis=2),0.5))
 
         # joint error detail
         p1_joint_eval_summary = 'Protocal #1 error(PA MPJPE) for each joint: \n'
+        print(p1_joint_error.shape)
         for i in range(len(p1_joint_error)):
-            err = p1_joint_error[i]
-            p1_joint_eval_summary += (self.joints_name[i] + ': %.2f\n' % err)
+            err = np.power(np.sum(np.power(p1_joint_error[i], 2)), 0.5)
+            p1_joint_eval_summary += ('{} | X: {:.2f}, Y: {:.2f}, Z: {:.2f}, total: {:.2f} \n'\
+                .format(self.joints_name[i],p1_joint_error[i][0], p1_joint_error[i][1], p1_joint_error[i][2], err))
 
         p2_joint_eval_summary = 'Protocal #2 error(MPJPE) for each joint: \n'
         for i in range(len(p2_joint_error)):
-            err = p2_joint_error[i]
-            p2_joint_eval_summary += (self.joints_name[i] + ': %.2f\n' % err)
+            err = np.power(np.sum(np.power(p2_joint_error[i], 2)), 0.5)
+            p2_joint_eval_summary += ('{} | X: {:.2f}, Y: {:.2f}, Z: {:.2f}, total: {:.2f} \n'\
+                .format(self.joints_name[i], p2_joint_error[i][0], p2_joint_error[i][1], p2_joint_error[i][2], err))
+
 
         p1_eval_summary = 'Protocol #1 error (PA MPJPE) >> %.2f\n' % (p1_error)
         p2_eval_summary = 'Protocol #2 error (MPJPE) >> %.2f\n' % (p2_error)
