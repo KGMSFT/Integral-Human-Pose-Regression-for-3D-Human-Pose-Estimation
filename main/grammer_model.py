@@ -43,7 +43,6 @@ class HeadNet(nn.Module):
     def forward(self, x):
         x = self.deconv_layers(x)
         x = self.final_layer(x)
-        x = soft_argmax(x, 18)
         return x
 
     def init_weights(self):
@@ -66,10 +65,12 @@ class GrammerPoseNet(nn.Module):
         self.grammer = grammer
     def forward(self, x):
         x = self.backbone(x)
-        x = self.head(x)
-        x = x.view(-1, 54)
-        x = self.grammer(x)
-        return x 
+        x1 = self.head(x)
+        x2 = x1.detach()
+        x2 = soft_argmax(x2, 18)
+        x2 = x2.view(-1, 54)
+        x2 = self.grammer(x2)
+        return x1, x2 
 
 def get_grammer_net(cfg, is_train, joint_num):
     backbone = ResNetBackbone(cfg.resnet_type)

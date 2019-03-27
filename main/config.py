@@ -6,9 +6,8 @@ import numpy as np
 class Config:
     
     # exp
-    exp_name = "exp_name"
-    sample_ratio = 5
-    geo_reg = 0.5
+    exp_name = "grammer"
+    sample_ratio = 50
 
     ## dataset
     trainset = ['Human36M','MPII'] # Human36M, MPII. !!Note that 0th db is reference db!!

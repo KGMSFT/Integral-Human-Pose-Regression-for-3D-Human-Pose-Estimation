@@ -66,6 +66,7 @@ class Trainer(Base):
     
     def __init__(self, cfg):
         self.GrammerLoss = DataParallelCriterion(loss.GrammerLoss())
+        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
         super(Trainer, self).__init__(cfg, log_name = 'train.log')
 
     def get_optimizer(self, optimizer_name, model):
@@ -118,6 +119,8 @@ class Tester(Base):
     
     def __init__(self, cfg, test_epoch, log_name='test.log'):
         self.GrammerLoss = DataParallelCriterion(loss.GrammerLoss())
+        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
+
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
         super(Tester, self).__init__(cfg, log_name = 'test.log')
