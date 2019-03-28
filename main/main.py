@@ -72,7 +72,7 @@ def main():
             joint_vis = joint_vis.cuda()
             joints_have_depth = joints_have_depth.cuda()
 
-            # if itr == 200:
+            # if itr == 101:
             #     break
           
             # forward
@@ -113,7 +113,7 @@ def main():
 
         tester = Tester(cfg, epoch)
         tester._make_batch_generator()
-        tester._make_model(trainer.model)
+        tester._make_model(trainer.model.state_dict())
 
         preds = []
         
@@ -121,6 +121,9 @@ def main():
             for itr_test, (index,input_img, joint_img, joint_vis, joints_have_depth) in enumerate(tqdm(tester.batch_generator)):
 
                 input_img = input_img.cuda()
+                joint_img = joint_img.cuda()
+                joint_vis = joint_vis.cuda()
+                joints_have_depth = joints_have_depth.cuda()
                 # forward
                 heatmap_out = tester.model(input_img)
                 if cfg.num_gpus > 1:
