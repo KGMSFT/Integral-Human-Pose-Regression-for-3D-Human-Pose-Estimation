@@ -126,10 +126,12 @@ def main():
                 joints_have_depth = joints_have_depth.cuda()
                 # forward
                 heatmap_out = tester.model(input_img)
+                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+
                 if cfg.num_gpus > 1:
                     heatmap_out = gather(heatmap_out,0)
                 # print(heatmap_out.size())
-                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+                # test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
                 coord_out = soft_argmax(heatmap_out, tester.joint_num)
                 test_loss.update(test_JointLocationLoss.detach())
                 

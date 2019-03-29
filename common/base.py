@@ -116,8 +116,8 @@ class Trainer(Base):
 class Tester(Base):
     
     def __init__(self, cfg, test_epoch, log_name='test.log'):
-        # self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
-        self.JointLocationLoss = loss.JointLocationLoss()
+        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
+        # self.JointLocationLoss = loss.JointLocationLoss()
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
         super(Tester, self).__init__(cfg, log_name = 'test.log')
