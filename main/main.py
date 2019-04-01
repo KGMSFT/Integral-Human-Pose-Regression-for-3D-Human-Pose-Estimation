@@ -14,7 +14,7 @@ from nets.loss import soft_argmax
 from utils.vis import vis_keypoints
 from utils.pose_utils import flip
 from meter import AverageMeter
-
+from tensorboardX import SummaryWriter
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -55,6 +55,8 @@ def main():
     test_loss_his = []
     p1_error_his = []
     p2_error_his = []
+    writer = SummaryWriter(log_dir=cfg.output_dir+'/tensorboard')
+    global_step = 0
     # train
     for epoch in range(trainer.start_epoch, cfg.end_epoch):
         trainer.scheduler.step()
@@ -62,6 +64,7 @@ def main():
         trainer.read_timer.tic()
 
         for itr, (index, input_img, joint_img, joint_vis, joints_have_depth) in enumerate(trainer.batch_generator):
+            global_step += 1
             trainer.read_timer.toc()
             trainer.gpu_timer.tic()
 
@@ -91,7 +94,7 @@ def main():
             trainer.optimizer.step()
             
             trainer.gpu_timer.toc()
-
+            writer.add_scalar('scalar/train_loss', train_loss.avg, global_step)
             if itr % 100 == 0:
                 screen = [
                     'Epoch [%d/%d] itr [%d/%d]:' % (epoch, cfg.end_epoch, itr, trainer.itr_per_epoch),
@@ -108,6 +111,7 @@ def main():
             trainer.read_timer.tic()
 
         train_loss_his.append(train_loss.avg)
+        writer.add_scalar('scalar/train_loss_epoch', train_loss.avg, epoch)
         train_loss.reset()
 
 
@@ -172,13 +176,17 @@ def main():
                 '%s: %.4f' % ('test_loss', test_loss.avg),
             ]
             test_loss_his.append(test_loss.avg)
+            writer.add_scalar('scalar/test_loss_epoch', test_loss.avg, epoch)
+
             test_loss.reset()
             trainer.logger.info(' '.join(screen))
 
         # evaluate
         preds = np.concatenate(preds, axis=0)
         
-        p1_error, p2_error= tester._evaluate(preds, cfg.result_dir, epoch)    
+        p1_error, p2_error= tester._evaluate(preds, cfg.result_dir, epoch)
+        writer.add_scalar('scalar/p1_error', p1_error, epoch)
+        writer.add_scalar("scalar/p2_error", p2_error, epoch)    
         p1_error_his.append(p1_error)
         p2_error_his.append(p2_error)
         trainer.save_model({
@@ -191,6 +199,7 @@ def main():
             'optimizer': trainer.optimizer.state_dict(),
             'scheduler': trainer.scheduler.state_dict(),
         }, epoch)
+    writer.close()
 
 if __name__ == "__main__":
     main()

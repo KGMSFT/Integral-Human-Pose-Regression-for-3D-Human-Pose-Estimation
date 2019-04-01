@@ -139,19 +139,21 @@ class Tester(Base):
         self.tot_sample_num = testset_loader.__len__()
         self.batch_generator = batch_generator
     
-    def _make_model(self, ckpt):
-        
-        # if model is None:
-        # model_path = os.path.join(self.cfg.model_dir, 'snapshot_%d.pth.tar' % self.test_epoch)
-        # assert os.path.exists(model_path), 'Cannot find model at ' + model_path
-        # self.logger.info('Load checkpoint from {}'.format(model_path))
-        
+    def _make_model(self, ckpt=None):
+            
         # prepare network
         self.logger.info("Creating graph...")
         model = get_pose_net(self.cfg, False, self.joint_num)
         model = DataParallelModel(model).cuda()
-        # ckpt = torch.load(model_path)
-        model.load_state_dict(ckpt)
+        
+        if ckpt is None:
+            model_path = os.path.join(self.cfg.model_dir, 'snapshot_%d.pth.tar' % self.test_epoch)
+            assert os.path.exists(model_path), 'Cannot find model at ' + model_path
+            self.logger.info('Load checkpoint from {}'.format(model_path))
+            ckpt = torch.load(model_path)
+            model.load_state_dict(ckpt['network'])
+        else:
+            model.load_state_dict(ckpt)
         model.eval()
 
         self.model = model
