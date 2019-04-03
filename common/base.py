@@ -127,7 +127,6 @@ class Tester(Base):
     def __init__(self, cfg, test_epoch, log_name='test.log'):
         self.GrammerLoss = DataParallelCriterion(loss.GrammerLoss())
         self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
-
         self.coord_out = loss.soft_argmax
         self.test_epoch = int(test_epoch)
         super(Tester, self).__init__(cfg, log_name = 'test.log')
@@ -149,27 +148,30 @@ class Tester(Base):
         self.tot_sample_num = testset_loader.__len__()
         self.batch_generator = batch_generator
     
-    def _make_model(self, model=None):
+    def _make_model(self, ckpt=None):
+            
+        # prepare network
+        self.logger.info("Creating graph...")
+        model = get_pose_net(self.cfg, False, self.joint_num)
+        model = DataParallelModel(model).cuda()
         
-        if model is None:
+        if ckpt is None:
             model_path = os.path.join(self.cfg.model_dir, 'snapshot_%d.pth.tar' % self.test_epoch)
             assert os.path.exists(model_path), 'Cannot find model at ' + model_path
             self.logger.info('Load checkpoint from {}'.format(model_path))
-            
-            # prepare network
-            self.logger.info("Creating graph...")
-            model = get_pose_net(self.cfg, False, self.joint_num)
-            model = DataParallelModel(model).cuda()
             ckpt = torch.load(model_path)
             model.load_state_dict(ckpt['network'])
+        else:
+            model.load_state_dict(ckpt)
         model.eval()
 
         self.model = model
+        # self.model = DataParallelModel(model).cuda()
 
     def _evaluate(self, preds, result_save_path, epoch):
         p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary,\
             p1_joint_eval_summary, p2_joint_eval_summary, p1_dim_eval_summary, p2_dim_eval_summary = self.testset.evaluate(preds, result_save_path)
-        self.logger.info("===evaluate {} | epoch: {}, sample_ratio: {} ===\n".format(cfg.exp_name, epoch, cfg.sample_ratio))
+        self.logger.info("=== {} | evaluate epoch: {}, sample_ratio: {}, geo_reg: {} ===\n".format(cfg.exp_name, epoch, cfg.sample_ratio, cfg.geo_reg))
         self.logger.info(p1_eval_summary)
         self.logger.info(p2_eval_summary)
         self.logger.info(p1_action_eval_summary)
