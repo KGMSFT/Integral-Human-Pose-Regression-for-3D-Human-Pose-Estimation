@@ -66,6 +66,7 @@ class GrammerPoseNet(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         x1 = self.head(x)
+        # x2 = x1
         x2 = x1.detach()
         x2 = soft_argmax(x2, 18)
         x2 = x2.view(-1, 54)
