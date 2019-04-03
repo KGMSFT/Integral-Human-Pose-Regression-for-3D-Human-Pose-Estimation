@@ -55,10 +55,17 @@ class Base(object):
         cur_epoch = max([int(file_name[file_name.find('snapshot_') + 9 : file_name.find('.pth.tar')]) for file_name in model_file_list])
         ckpt = torch.load(osp.join(self.cfg.model_dir, 'snapshot_' + str(cur_epoch) + '.pth.tar')) 
         start_epoch = ckpt['epoch'] + 1
-        model.load_state_dict(ckpt['network'])
-        optimizer.load_state_dict(ckpt['optimizer'])
-        scheduler.load_state_dict(ckpt['scheduler'])
-        print(ckpt['train_loss_his'][-1])
+        state_dict_ckpt = ckpt['network']
+        state_dict_model = model.state_dict()
+        state_dict_model.update(state_dict_ckpt)
+
+        # print(optimizer.state_dict())
+        # print(ckpt['optimizer'])
+        # model.load_state_dict(ckpt['network'])
+        model.load_state_dict(state_dict_model)
+        # optimizer.load_state_dict(ckpt['optimizer'])
+        # scheduler.load_state_dict(ckpt['scheduler'])
+     
         return start_epoch, model, optimizer, scheduler
 
 

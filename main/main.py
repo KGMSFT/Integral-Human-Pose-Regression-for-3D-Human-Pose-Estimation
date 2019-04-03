@@ -82,8 +82,9 @@ def main():
             JointLocationLoss = trainer.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth) 
             GrammerLoss = trainer.GrammerLoss(joint_out, joint_img, joint_vis, joints_have_depth)
 
-            loss = GrammerLoss + JointLocationLoss
-            train_loss.update(GrammerLoss.detach() + JointLocationLoss.detach())
+            # loss = GrammerLoss + JointLocationLoss
+            loss = GrammerLoss
+            train_loss.update(GrammerLoss.detach())
             # print(GrammerLoss)
             # print(GrammerLoss.detach().cpu().numpy())
             # if loss.detach().cpu().numpy() == np.nan:
