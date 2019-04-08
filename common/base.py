@@ -64,8 +64,9 @@ class Base(object):
         # model.load_state_dict(ckpt['network'])
         model.load_state_dict(state_dict_model)
         # optimizer.load_state_dict(ckpt['optimizer'])
-        # scheduler.load_state_dict(ckpt['scheduler'])
-     
+        scheduler.load_state_dict(ckpt['scheduler'])
+        # optimizer = torch.optim.SGD(model.parameters(), lr=self.cfg.lr, momentum=self.cfg.momentum, weight_decay=self.cfg.wd) 
+        # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=self.cfg.lr_dec_epoch, gamma=self.cfg.lr_dec_factor)
         return start_epoch, model, optimizer, scheduler
 
 
@@ -152,7 +153,9 @@ class Tester(Base):
             
         # prepare network
         self.logger.info("Creating graph...")
-        model = get_pose_net(self.cfg, False, self.joint_num)
+        # model = get_pose_net(self.cfg, False, self.joint_num)
+        model = get_grammer_net(self.cfg, False, self.joint_num)
+
         model = DataParallelModel(model).cuda()
         
         if ckpt is None:
@@ -171,7 +174,7 @@ class Tester(Base):
     def _evaluate(self, preds, result_save_path, epoch):
         p1_error, p2_error, p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary,\
             p1_joint_eval_summary, p2_joint_eval_summary, p1_dim_eval_summary, p2_dim_eval_summary = self.testset.evaluate(preds, result_save_path)
-        self.logger.info("=== {} | evaluate epoch: {}, sample_ratio: {}, geo_reg: {} ===\n".format(cfg.exp_name, epoch, cfg.sample_ratio, cfg.geo_reg))
+        self.logger.info("=== {} | evaluate epoch: {}, sample_ratio: {} ===\n".format(cfg.exp_name, epoch, cfg.sample_ratio))
         self.logger.info(p1_eval_summary)
         self.logger.info(p2_eval_summary)
         self.logger.info(p1_action_eval_summary)

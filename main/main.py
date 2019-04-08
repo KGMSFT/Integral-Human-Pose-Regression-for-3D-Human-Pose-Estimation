@@ -79,19 +79,18 @@ def main():
             #     break
           
             # forward
-            heatmap_out, joint_out = trainer.model(input_img)
+            joint_out = trainer.model(input_img)
 
             # backward
-            JointLocationLoss = trainer.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth) 
-            GrammerLoss = trainer.GrammerLoss(joint_out, joint_img, joint_vis, joints_have_depth)
+            # JointLocationLoss = trainer.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth) 
+            # GrammerLoss = trainer.GrammerLoss(joint_out, joint_img, joint_vis, joints_have_depth)
 
-            # loss = GrammerLoss + JointLocationLoss
+            # loss = GrammerLoss
+            # train_loss.update(GrammerLoss.detach())
+
+            GrammerLoss = trainer.GrammerLoss(joint_out, joint_img, joint_vis, joints_have_depth)
             loss = GrammerLoss
             train_loss.update(GrammerLoss.detach())
-            # print(GrammerLoss)
-            # print(GrammerLoss.detach().cpu().numpy())
-            # if loss.detach().cpu().numpy() == np.nan:
-            #     print(index)
             loss.backward()
             trainer.optimizer.step()
             
@@ -131,18 +130,20 @@ def main():
                 joint_vis = joint_vis.cuda()
                 joints_have_depth = joints_have_depth.cuda()
                 # forward
-                heatmap_out, joint_out = tester.model(input_img)
+                joint_out = tester.model(input_img)
                 if cfg.num_gpus > 1:
                     joint_out = gather(joint_out,0)
                 # print(heatmap_out.size())
                 test_GrammerLoss = tester.GrammerLoss(joint_out, joint_img, joint_vis, joints_have_depth)
-                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+                # test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
                 coord_out = joint_out
-                test_loss.update(test_GrammerLoss.detach() + test_JointLocationLoss.detach())
-                
+                # test_loss.update(test_GrammerLoss.detach() + test_JointLocationLoss.detach())
+                test_loss.update(test_GrammerLoss.detach())                
                 if cfg.flip_test:
                     flipped_input_img = flip(input_img, dims=3)
-                    flipped_heatmap_out, joint_out = tester.model(flipped_input_img)
+                    # flipped_heatmap_out, joint_out = tester.model(flipped_input_img)
+                    joint_out = tester.model(flipped_input_img)
+
                     if cfg.num_gpus > 1:
                         joint_out = gather(joint_out,0)
                     # flipped_coord_out = soft_argmax(flipped_heatmap_out, tester.joint_num)

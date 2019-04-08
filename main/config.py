@@ -6,11 +6,11 @@ import numpy as np
 class Config:
     
     # exp
-    exp_name = "grammer"
-    sample_ratio = 50
+    exp_name = "grammer only 3D"
+    sample_ratio = 5
 
     ## dataset
-    trainset = ['Human36M','MPII'] # Human36M, MPII. !!Note that 0th db is reference db!!
+    trainset = ['Human36M'] # Human36M, MPII. !!Note that 0th db is reference db!!
     testset = 'Human36M' # Human36M, MPII
 
     ## directory
@@ -35,8 +35,8 @@ class Config:
     pixel_std = (0.229, 0.224, 0.225)
 
     ## training config
-    lr_dec_epoch = [15, 17]
-    end_epoch = 20
+    lr_dec_epoch = [50, 80]
+    end_epoch = 50
     lr = 1e-3
     lr_dec_factor = 0.1
     optimizer = 'adam'

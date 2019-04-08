@@ -67,11 +67,15 @@ class GrammerPoseNet(nn.Module):
         x = self.backbone(x)
         x1 = self.head(x)
         # x2 = x1
-        x2 = x1.detach()
-        x2 = soft_argmax(x2, 18)
-        x2 = x2.view(-1, 54)
-        x2 = self.grammer(x2)
-        return x1, x2 
+        # x2 = x1.detach()
+        # x2 = soft_argmax(x2, 18)
+        # x2 = x2.view(-1, 54)
+        # x2 = self.grammer(x2)
+        # return x1, x2 
+        x1 = soft_argmax(x1, 18)
+        x1 = x1.view(-1, 54)
+        x1 = self.grammer(x1)
+        return x1
 
 def get_grammer_net(cfg, is_train, joint_num):
     backbone = ResNetBackbone(cfg.resnet_type)

@@ -117,7 +117,7 @@ class Human36M:
                     'f': f,
                     'c': c
                 })
-
+        print(len(data))
         return data
 
     def evaluate(self, preds, result_dir):

@@ -88,7 +88,7 @@ class MPII:
                 'f': np.ones(2), # dummy value
                 'c': np.ones(2) # dummy value
             })
-
+        print(len(data))
         return data
 
     def evaluate(self, preds, result_dir):
