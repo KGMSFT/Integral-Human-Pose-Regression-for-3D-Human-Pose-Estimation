@@ -72,7 +72,7 @@ def main():
             joint_vis = joint_vis.cuda()
             joints_have_depth = joints_have_depth.cuda()
 
-            # if itr == 200:
+            # if itr == 101:
             #     break
           
             # forward
@@ -113,7 +113,7 @@ def main():
 
         tester = Tester(cfg, epoch)
         tester._make_batch_generator()
-        tester._make_model(trainer.model)
+        tester._make_model(trainer.model.state_dict())
 
         preds = []
         
@@ -121,12 +121,17 @@ def main():
             for itr_test, (index,input_img, joint_img, joint_vis, joints_have_depth) in enumerate(tqdm(tester.batch_generator)):
 
                 input_img = input_img.cuda()
+                joint_img = joint_img.cuda()
+                joint_vis = joint_vis.cuda()
+                joints_have_depth = joints_have_depth.cuda()
                 # forward
                 heatmap_out = tester.model(input_img)
+                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+
                 if cfg.num_gpus > 1:
                     heatmap_out = gather(heatmap_out,0)
                 # print(heatmap_out.size())
-                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+                # test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
                 coord_out = soft_argmax(heatmap_out, tester.joint_num)
                 test_loss.update(test_JointLocationLoss.detach())
                 
