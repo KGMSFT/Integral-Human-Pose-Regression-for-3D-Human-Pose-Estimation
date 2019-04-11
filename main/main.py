@@ -131,12 +131,13 @@ def main():
                 joints_have_depth = joints_have_depth.cuda()
                 # forward
                 joint_out = tester.model(input_img)
-                if cfg.num_gpus > 1:
-                    joint_out = gather(joint_out,0)
+                
                 # print(heatmap_out.size())
                 test_GrammerLoss = tester.GrammerLoss(joint_out, joint_img, joint_vis, joints_have_depth)
                 # test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
-                coord_out = joint_out
+                if cfg.num_gpus > 1:
+                    joint_out = gather(joint_out,0)
+                coord_out = joint_out.detach()
                 # test_loss.update(test_GrammerLoss.detach() + test_JointLocationLoss.detach())
                 test_loss.update(test_GrammerLoss.detach())                
                 if cfg.flip_test:
