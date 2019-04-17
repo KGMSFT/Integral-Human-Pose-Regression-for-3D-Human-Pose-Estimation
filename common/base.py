@@ -151,9 +151,9 @@ class Tester(Base):
             assert os.path.exists(model_path), 'Cannot find model at ' + model_path
             self.logger.info('Load checkpoint from {}'.format(model_path))
             ckpt = torch.load(model_path)
-
-
-        model.load_state_dict(ckpt['network'])
+            model.load_state_dict(ckpt['network'])
+        else:
+            model.load_state_dict(ckpt)
         model.eval()
 
         self.model = model
