@@ -81,24 +81,19 @@ def vis_3d_skeleton(kpt_3d, kpt_3d_vis, kps_lines, filename=None):
     xmin, xmax = ax.get_xlim3d()
     ymin, ymax = ax.get_ylim3d()
     zmin, zmax = ax.get_zlim3d()
-    print([xmin, xmax])
-    print([ymin, ymax])
-    print([zmin, zmax])
     scale_x = xmax - xmin
     scale_y = ymax - ymin
     scale_z = zmax - zmin
     scale = [scale_x/scale_z, scale_y/scale_z, 1.0, 1.0]
     # scale = [0.9, 0.9, 1.0, 1.0]
-    print(np.diag(scale))
     ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag(scale))
 
 
-    
-    # if filename is None:
-    #     ax.set_title('3D vis')
-    # else:
-    #     ax.set_title(filename)
-    ax.set_title("3D")
+    if filename is None:
+         ax.set_title('3D vis')
+    else:
+         ax.set_title(filename)
+    #ax.set_title("3D")
     ax.set_xlabel('X Label')
     ax.set_ylabel('Z Label')
     ax.set_zlabel('Y Label')

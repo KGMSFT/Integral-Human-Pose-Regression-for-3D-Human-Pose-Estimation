@@ -72,8 +72,8 @@ def main():
             joint_vis = joint_vis.cuda()
             joints_have_depth = joints_have_depth.cuda()
 
-            # if itr == 101:
-            #     break
+#            if itr == 101:
+#                break
           
             # forward
             heatmap_out = trainer.model(input_img)

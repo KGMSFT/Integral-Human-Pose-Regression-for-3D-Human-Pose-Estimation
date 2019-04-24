@@ -9,7 +9,7 @@ import torch.optim
 import torchvision.transforms as transforms
 
 from config import cfg
-from dataset import DatasetLoader
+from dataset_geo import DatasetLoader
 from timer import Timer
 from logger import colorlogger
 from nets.balanced_parallel import DataParallelModel, DataParallelCriterion

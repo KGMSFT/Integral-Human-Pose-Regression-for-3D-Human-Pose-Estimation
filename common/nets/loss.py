@@ -52,8 +52,8 @@ class JointLocationLoss(nn.Module):
         loss = loss.mean()
 
         # print(gt_have_depth)
-        varloss = VarLoss(var_weight=0.1)(coord_out[:,:,2], gt_vis, gt_have_depth, gt_coord[:,:,:2])
-        loss += varloss[0]
+#        varloss = VarLoss(var_weight=0.1)(coord_out[:,:,2], gt_vis, gt_have_depth, gt_coord[:,:,:2])
+#        loss += varloss[0]
         return loss
 
 class VarLoss(Function):

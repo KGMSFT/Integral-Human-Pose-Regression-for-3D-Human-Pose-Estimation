@@ -25,11 +25,11 @@ class Human36M:
         self.subaction_idx = (1, 2)
         self.camera_idx = (1, 2, 3, 4)
         self.action_name = ['Directions', 'Discussion', 'Eating', 'Greeting', 'Phoning', 'Posing', 'Purchases', 'Sitting', 'SittingDown', 'Smoking', 'Photo', 'Waiting', 'Walking', 'WalkDog', 'WalkTogether']
-       
+
         self.root_idx = self.joints_name.index('Pelvis')
         self.lshoulder_idx = self.joints_name.index('L_Shoulder')
         self.rshoulder_idx = self.joints_name.index('R_Shoulder')
-    
+
     def get_subsampling_ratio(self, data_split):
 
         if data_split == 'train':
@@ -40,7 +40,7 @@ class Human36M:
             assert 0, print('Unknown subset')
 
     def load_h36m_annot_file(self, annot_file):
-        
+
         data = sio.loadmat(annot_file)
         joint_world = data['pose3d_world'] # 3D world coordinates of keypoints
         R = data['R'] # extrinsic
@@ -49,7 +49,7 @@ class Human36M:
         c = np.reshape(data['c'],(-1)) # principal points
         img_heights = np.reshape(data['img_height'],(-1))
         img_widths = np.reshape(data['img_width'],(-1))
-       
+
         # add thorax
         thorax = (joint_world[:, self.lshoulder_idx, :] + joint_world[:, self.rshoulder_idx, :]) * 0.5
         thorax = thorax.reshape((thorax.shape[0], 1, thorax.shape[1]))
@@ -89,27 +89,27 @@ class Human36M:
         folders = self._sample_dataset(self.data_split)
         data = []
         for folder in folders:
-            
+
             if folder == 's_11_act_02_subact_02_ca_01':
                 continue
 
             folder_dir = osp.join(self.data_dir, folder)
-            
+
             # load ground truth
             joint_world, R, T, f, c, img_widths, img_heights = self.load_h36m_annot_file(osp.join(folder_dir, 'h36m_meta.mat'))
             img_num = np.shape(joint_world)[0]
 
             for n in range(0, img_num, self.subsampling):
-                
+
                 img_path = osp.join(folder_dir, self._H36ImageName(folder, n))
                 joint_img, joint_cam, joint_vis, center_cam, bbox = process_world_coordinate(joint_world[n], self.root_idx, self.joint_num, R, T, f, c)
-                
+
                 img_width = img_widths[n]
                 img_height = img_heights[n]
-                
+
                 data.append({
                     'img_path': img_path,
-                    'bbox': bbox, 
+                    'bbox': bbox,
                     'joint_img': joint_img, # [org_img_x, org_img_y, depth - root_depth]
                     'joint_cam': joint_cam, # [X, Y, Z] in camera coordinate
                     'joint_vis': joint_vis,
@@ -122,7 +122,7 @@ class Human36M:
 
     def evaluate(self, preds, result_dir):
 
-        print() 
+        print()
         print('Evaluation start...')
 
         gts = self.load_data()
@@ -131,14 +131,17 @@ class Human36M:
 
         sample_num = len(gts)
         joint_num = self.joint_num
-        
+
         p1_error = np.zeros((sample_num, joint_num, 3)) # PA MPJPE (protocol #1 metric)
         p2_error = np.zeros((sample_num, joint_num, 3)) # MPJPE (protocol #2 metroc)
         p1_error_action = [ [] for _ in range(len(self.action_idx)) ] # PA MPJPE for each action
         p2_error_action = [ [] for _ in range(len(self.action_idx)) ] # MPJPE error for each action
         pred_to_save = []
+        root_id = 0
+        gt_3d_geo = np.fromfile('../main/joint_img_geo_test.bin.np',\
+                                dtype=np.float32)
+        gt_3d_geo = gt_3d_geo.reshape(-1, 18, 3)
         for n in range(sample_num):
-            
             gt = gts[n]
             f = gt['f']
             c = gt['c']
@@ -152,23 +155,33 @@ class Human36M:
             # joint_img = gt['joint_img']
             # pre_2d_kpt = joint_img.copy()
             # restore coordinates to original space
-            pre_2d_kpt = preds[n].copy()
-            pre_2d_kpt[:,0], pre_2d_kpt[:,1], pre_2d_kpt[:,2] = warp_coord_to_original(pre_2d_kpt, bbox, gt_3d_center)
-
-            vis = False
-            if vis:
-                cvimg = cv2.imread(gt['img_path'], cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
-                filename = str(random.randrange(1,500))
-                tmpimg = cvimg.copy().astype(np.uint8)
-                tmpkps = np.zeros((3,joint_num))
-                tmpkps[0,:], tmpkps[1,:] = pre_2d_kpt[:,0], pre_2d_kpt[:,1]
-                tmpkps[2,:] = 1
-                tmpimg = vis_keypoints(tmpimg, tmpkps, self.skeleton)
-                cv2.imwrite(osp.join(cfg.vis_dir, filename + '_output.jpg'), tmpimg)
-
-            # back project to camera coordinate system
-            pre_3d_kpt = np.zeros((joint_num,3))
-            pre_3d_kpt[:,0], pre_3d_kpt[:,1], pre_3d_kpt[:,2] = pixel2cam(pre_2d_kpt, f, c)
+#            pre_2d_kpt = preds[n].copy()
+            pre_2d_kpt = gt_3d_geo[n].copy()
+            print(pre_2d_kpt)
+            scale_cam = gt_3d_kpt - gt_3d_kpt[self.root_idx, :]
+            scale_pre = pre_2d_kpt - pre_2d_kpt[self.root_idx, :]
+            scale = (scale_cam[self.root_idx+1:] /scale_pre[self.root_idx+1:])\
+                    .mean()
+            print(scale)
+            if n==1:
+                break
+            pre_3d_kpt = pre_2d_kpt * scale
+#            pre_2d_kpt[:,0], pre_2d_kpt[:,1], pre_2d_kpt[:,2] = warp_coord_to_original(pre_2d_kpt, bbox, gt_3d_center)
+#
+#            vis = False
+#            if vis:
+#                cvimg = cv2.imread(gt['img_path'], cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+#                filename = str(random.randrange(1,500))
+#                tmpimg = cvimg.copy().astype(np.uint8)
+#                tmpkps = np.zeros((3,joint_num))
+#                tmpkps[0,:], tmpkps[1,:] = pre_2d_kpt[:,0], pre_2d_kpt[:,1]
+#                tmpkps[2,:] = 1
+#                tmpimg = vis_keypoints(tmpimg, tmpkps, self.skeleton)
+#                cv2.imwrite(osp.join(cfg.vis_dir, filename + '_output.jpg'), tmpimg)
+#
+#            # back project to camera coordinate system
+#            pre_3d_kpt = np.zeros((joint_num,3))
+#            pre_3d_kpt[:,0], pre_3d_kpt[:,1], pre_3d_kpt[:,2] = pixel2cam(pre_2d_kpt, f, c)
 
             vis = False
             if vis:
@@ -176,16 +189,16 @@ class Human36M:
 
             # root joint alignment
             pre_3d_kpt = pre_3d_kpt - pre_3d_kpt[self.root_idx]
-            gt_3d_kpt  = gt_3d_kpt - gt_3d_kpt[self.root_idx]
+            gt_3d_kpt = gt_3d_kpt - gt_3d_kpt[self.root_idx]
 
             # rigid alignment for PA MPJPE (protocol #1)
             pre_3d_kpt_align = rigid_align(pre_3d_kpt, gt_3d_kpt)
- 
+
             # prediction save
             pred_to_save.append({'pred': pre_3d_kpt,
                                  'align_pred': pre_3d_kpt_align,
                                  'gt': gt_3d_kpt})
-           
+
             # error save
             p1_error[n] = np.power(pre_3d_kpt_align - gt_3d_kpt,2) # PA MPJPE (protocol #1)
             p2_error[n] = np.power(pre_3d_kpt - gt_3d_kpt,2)  # MPJPE (protocol #2)
@@ -246,7 +259,7 @@ class Human36M:
             action_name = self.action_name[i]
             p1_action_eval_summary += (action_name + ': %.2f\n' % err)
 
-            
+
         p2_action_eval_summary = 'Protocol #2 error (MPJPE) for each action: \n'
         for i in range(len(p2_error_action)):
             err = np.array(p2_error_action[i])
@@ -258,7 +271,7 @@ class Human36M:
         # print()
         # print(p1_action_eval_summary)
         # print(p2_action_eval_summary)
-       
+
         # result save
         f_pred_3d_kpt = open(osp.join(result_dir, 'pred_3d_kpt.txt'), 'w')
         f_pred_3d_kpt_align = open(osp.join(result_dir, 'pred_3d_kpt_align.txt'), 'w')
@@ -286,7 +299,8 @@ class Human36M:
         f_eval_result.write(p2_action_eval_summary)
         f_eval_result.write('\n')
         f_eval_result.close()
-        return p1_error, p2_error,  p1_eval_summary, p2_eval_summary, p1_action_eval_summary, p2_action_eval_summary, \
+        return p1_error, p2_error, p1_eval_summary, p2_eval_summary, \
+                p1_action_eval_summary, p2_action_eval_summary, \
             p1_joint_eval_summary, p2_joint_eval_summary, p1_dim_eval_summary, p2_dim_eval_summary
 
 

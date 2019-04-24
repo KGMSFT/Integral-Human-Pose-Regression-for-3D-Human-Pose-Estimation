@@ -6,7 +6,7 @@ import numpy as np
 class Config:
     
     # exp
-    exp_name = "exp_name"
+    exp_name = "test joint_img_geo"
     sample_ratio = 5
     geo_reg = 0.5
 
