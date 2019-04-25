@@ -9,7 +9,7 @@ from utils.vis import vis_keypoints, vis_3d_skeleton
 joint_id = 3
 root_id = 0
 def test_my_gt():
-    skeleton_train = np.fromfile("skeleton_train_geo_img_all_ratiox.np.bin",\
+    skeleton_train = np.fromfile("skeleton_test_geo_img_all_ratiox.np.bin",\
                                  dtype=np.float32)
     skeleton_train = skeleton_train.reshape(-1, 18, 3)
     skeleton_struct = ( (0, 7), (7, 8), (8, 9), (9, 10), (8, 11), (11, 12), (12, 13), (8, 14), (14, 15), (15, 16), (0, 1), (1, 2), (2, 3), (0, 4), (4, 5), (5, 6) )
@@ -78,7 +78,7 @@ def test_my_gt():
     joint_img_geo.tofile("joint_img_geo_test.bin.np")
     print(joint_img_geo.shape)
 def test_proj_ratio():
-    db = Human36M("train")
+    db = Human36M("test")
     db_hm36 = db.load_data()
     joint_num = db.joint_num
     sample_num = len(db_hm36)
@@ -103,7 +103,7 @@ def test_proj_ratio():
         else:
             skeleton_train = np.concatenate((skeleton_train, joint_img), axis=0)
     print(skeleton_train.shape)
-    skeleton_train.tofile("skeleton_train_geo_img_all_ratiox.np.bin")
+    skeleton_train.tofile("skeleton_test_geo_img_all_ratiox.np.bin")
 
 
 def gt_joint_img():
@@ -218,3 +218,4 @@ def main():
 if __name__ == "__main__":
     # gt_joint_img()
     test_my_gt()
+    # test_proj_ratio()

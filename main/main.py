@@ -72,24 +72,26 @@ def main():
             joint_vis = joint_vis.cuda()
             joints_have_depth = joints_have_depth.cuda()
 
-#            if itr == 101:
-#                break
-          
+            if itr == 101:
+                break
             # forward
-            heatmap_out = trainer.model(input_img)
+#            heatmap_out = trainer.model(input_img)
+            joint_out = trainer.model(input_img)
 
             # backward
-            JointLocationLoss = trainer.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
-
-            loss = JointLocationLoss
-            train_loss.update(JointLocationLoss.detach())
+#            JointLocationLoss = trainer.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+            GeoLoss = trainer.GeoLoss(joint_out, joint_img, joint_vis, joints_have_depth)
+#            loss = JointLocationLoss
+            loss = GeoLoss
+#            train_loss.update(JointLocationLoss.detach())
+            train_loss.update(GeoLoss.detach())
             # print(JointLocationLoss)
             # print(JointLocationLoss.detach().cpu().numpy())
-            if np.isnan(JointLocationLoss.detach().cpu().numpy()):
-                print(index)
+#            if np.isnan(JointLocationLoss.detach().cpu().numpy()):
+#                print(index)
             loss.backward()
             trainer.optimizer.step()
-            
+
             trainer.gpu_timer.toc()
 
             if itr % 100 == 0:
@@ -116,7 +118,7 @@ def main():
         tester._make_model(trainer.model.state_dict())
 
         preds = []
-        
+
         with torch.no_grad():
             for itr_test, (index,input_img, joint_img, joint_vis, joints_have_depth) in enumerate(tqdm(tester.batch_generator)):
 
@@ -125,27 +127,33 @@ def main():
                 joint_vis = joint_vis.cuda()
                 joints_have_depth = joints_have_depth.cuda()
                 # forward
-                heatmap_out = tester.model(input_img)
-                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+#                heatmap_out = tester.model(input_img)
+                joint_out = tester.model(input_img)
+                test_GeoLoss = tester.GeoLoss(joint_out, joint_img, joint_vis,
+                                              joints_have_depth)
 
+#                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
+
+#                if cfg.num_gpus > 1:
+#                    heatmap_out = gather(heatmap_out,0)
                 if cfg.num_gpus > 1:
-                    heatmap_out = gather(heatmap_out,0)
+                    joint_out = gather(joint_out)
                 # print(heatmap_out.size())
                 # test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
-                coord_out = soft_argmax(heatmap_out, tester.joint_num)
-                test_loss.update(test_JointLocationLoss.detach())
+#                coord_out = soft_argmax(heatmap_out, tester.joint_num)
+                test_loss.update(test_GeoLoss.detach())
                 
                 if cfg.flip_test:
                     flipped_input_img = flip(input_img, dims=3)
-                    flipped_heatmap_out = tester.model(flipped_input_img)
+                    flipped_joint_out = tester.model(flipped_input_img)
                     if cfg.num_gpus > 1:
-                        flipped_heatmap_out = gather(flipped_heatmap_out,0)
-                    flipped_coord_out = soft_argmax(flipped_heatmap_out, tester.joint_num)
+                        flipped_joint_out = gather(flipped_joint_out,0)
+#                    flipped_joint_out = soft_argmax(flipped_joint_out, tester.joint_num)
 
-                    flipped_coord_out[:, :, 0] = cfg.output_shape[1] - flipped_coord_out[:, :, 0] - 1
+#                    flipped_joint_out[:, :, 0] = cfg.output_shape[1] - flipped_joint_out[:, :, 0] - 1
                     for pair in tester.flip_pairs:
-                        flipped_coord_out[:, pair[0], :], flipped_coord_out[:, pair[1], :] = flipped_coord_out[:, pair[1], :].clone(), flipped_coord_out[:, pair[0], :].clone()
-                    coord_out = (coord_out + flipped_coord_out)/2.
+                        flipped_joint_out[:, pair[0], :], flipped_joint_out[:, pair[1], :] = flipped_joint_out[:, pair[1], :].clone(), flipped_joint_out[:, pair[0], :].clone()
+                    coord_out = (joint_out+ flipped_joint_out)/2.
 
                 vis = False
                 if vis:

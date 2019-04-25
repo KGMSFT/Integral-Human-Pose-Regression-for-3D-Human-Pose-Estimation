@@ -56,6 +56,16 @@ class JointLocationLoss(nn.Module):
 #        loss += varloss[0]
         return loss
 
+class GeoLoss(nn.Module):
+    def __init__(self):
+        super(GeoLoss, self).__init__()
+
+    def forward(self, pred_coord, gt_coord, gt_vis, gt_have_depth):
+        loss = torch.abs(pred_coord - gt_coord) * gt_vis
+        loss = (loss[:, :, 0] + loss[:, :, 1] + loss[:, :, 2] *\
+                gt_have_depth)/3
+        return loss.mean()
+        
 class VarLoss(Function):
   def __init__(self, var_weight):
     super(VarLoss, self).__init__()

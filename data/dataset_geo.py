@@ -135,7 +135,7 @@ class DatasetLoader(Dataset):
         joint_img[:, 0] = joint_img[:, 0] / cfg.input_shape[1] * cfg.output_shape[1]
         joint_img[:, 1] = joint_img[:, 1] / cfg.input_shape[0] * cfg.output_shape[0]
         joint_img[:, 2] = joint_img[:, 2] / cfg.input_shape[0] * cfg.output_shape[0]
-        joint_img[:, 2] = (joint_img[:, 2] + 1.) / 2.
+        #=joint_img[:, 2] = (joint_img[:, 2] + 1.) / 2.
         #vis_3d_skeleton(joint_img, joint_vis, skeleton, "test_gt_geo")
 
 
