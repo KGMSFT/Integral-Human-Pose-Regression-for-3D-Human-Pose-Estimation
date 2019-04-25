@@ -89,10 +89,10 @@ class GeoPoseNet(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         x = self.head(x)
-        x = soft_argmax(x, 18)
-        x = x.view(x.size(0), -1)
-        x = self.geo(x)
-        return x
+        x1 = soft_argmax(x, 18)
+        x1 = x1.view(x.size(0), -1)
+        x1 = self.geo(x1)
+        return x, x1
 
 class Geometry(nn.Module):
     def __init__(self):

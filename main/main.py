@@ -72,11 +72,16 @@ def main():
             joint_vis = joint_vis.cuda()
             joints_have_depth = joints_have_depth.cuda()
 
-            if itr == 101:
-                break
+#            if itr == 101:
+#                break
             # forward
 #            heatmap_out = trainer.model(input_img)
-            joint_out = trainer.model(input_img)
+            heatmap_out, joint_out = trainer.model(input_img)
+            print(heatmap_out.size())
+            print(len(joint_out))
+            print(joint_out[0])
+            print(joint_img[0])
+            print(joint_vis[0])
 
             # backward
 #            JointLocationLoss = trainer.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
@@ -128,29 +133,29 @@ def main():
                 joints_have_depth = joints_have_depth.cuda()
                 # forward
 #                heatmap_out = tester.model(input_img)
-                joint_out = tester.model(input_img)
+                heatmap_out, joint_out = tester.model(input_img)
                 test_GeoLoss = tester.GeoLoss(joint_out, joint_img, joint_vis,
                                               joints_have_depth)
 
 #                test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
 
-#                if cfg.num_gpus > 1:
-#                    heatmap_out = gather(heatmap_out,0)
                 if cfg.num_gpus > 1:
-                    joint_out = gather(joint_out)
+                    heatmap_out = gather(heatmap_out,0)
+                    joint_out = gather(joint_out, 0)
                 # print(heatmap_out.size())
                 # test_JointLocationLoss = tester.JointLocationLoss(heatmap_out, joint_img, joint_vis, joints_have_depth)
-#                coord_out = soft_argmax(heatmap_out, tester.joint_num)
+                coord_out = soft_argmax(heatmap_out, tester.joint_num)
                 test_loss.update(test_GeoLoss.detach())
                 
                 if cfg.flip_test:
                     flipped_input_img = flip(input_img, dims=3)
-                    flipped_joint_out = tester.model(flipped_input_img)
+                    flipped_heatmap_out, flipped_joint_out = tester.model(flipped_input_img)
                     if cfg.num_gpus > 1:
                         flipped_joint_out = gather(flipped_joint_out,0)
-#                    flipped_joint_out = soft_argmax(flipped_joint_out, tester.joint_num)
-
-#                    flipped_joint_out[:, :, 0] = cfg.output_shape[1] - flipped_joint_out[:, :, 0] - 1
+                        flipped_heatmap_out = gather(flipped_heatmap_out,0)
+                    flipped_coord_out = soft_argmax(flipped_heatmap_out, tester.joint_num)
+                    flipped_joint_out[:, :, 0] = cfg.output_shape[1] - flipped_joint_out[:, :, 0] - 1 
+                    flipped_coord_out[:, :, 0] = cfg.output_shape[1] - flipped_coord_out[:, :, 0] - 1
                     for pair in tester.flip_pairs:
                         flipped_joint_out[:, pair[0], :], flipped_joint_out[:, pair[1], :] = flipped_joint_out[:, pair[1], :].clone(), flipped_joint_out[:, pair[0], :].clone()
                     coord_out = (joint_out+ flipped_joint_out)/2.

@@ -71,7 +71,7 @@ class Base(object):
 class Trainer(Base):
    
     def __init__(self, cfg):
-#        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
+        self.JointLocationLoss = DataParallelCriterion(loss.JointLocationLoss())
         self.GeoLoss = DataParallelCriterion(loss.GeoLoss())
         super(Trainer, self).__init__(cfg, log_name = 'train.log')
 
